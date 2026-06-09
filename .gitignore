@@ -4,5 +4,7 @@ __pycache__/
 
 uploads/
 chroma_db/
+sessions/
+uploads/
 
 .env
