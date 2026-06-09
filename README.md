@@ -3,7 +3,7 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-Backend-green)
 ![Ollama](https://img.shields.io/badge/Ollama-Local%20LLM-black)
 ![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector%20DB-orange)
-![Status](https://img.shields.io/badge/Status-v0.2.0--dev-yellow)
+![Status](https://img.shields.io/badge/Status-v0.4.0--dev-yellow)
 
 # DocTeach
 
