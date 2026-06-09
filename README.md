@@ -1,3 +1,9 @@
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-Backend-green)
+![Ollama](https://img.shields.io/badge/Ollama-Local%20LLM-black)
+![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector%20DB-orange)
+![Status](https://img.shields.io/badge/Status-v0.2.0--dev-yellow)
+
 # DocTeach
 
 A session-based Retrieval-Augmented Generation (RAG) platform for querying PDF documents using local AI models.
