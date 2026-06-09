@@ -1,7 +1,10 @@
+# scripts/test_rag.py
+
 from app.rag import answer_question
 
 response = answer_question(
-    "What is Subrahmanya Math's educational background?"
+    session_id="YOUR_SESSION_ID",
+    question="What backend technologies does Anant know?"
 )
 
 print(response)

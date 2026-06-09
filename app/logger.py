@@ -2,12 +2,22 @@ import logging
 
 from app.config import LOG_LEVEL
 
+logger = logging.getLogger("docteach")
 
-logging.basicConfig(
-    level=LOG_LEVEL,
-    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s"
-)
+logger.setLevel(LOG_LEVEL)
 
-logger = logging.getLogger(
-    "docteach"
-)
+if not logger.handlers:
+
+    handler = logging.StreamHandler()
+
+    formatter = logging.Formatter(
+        "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+    )
+
+    handler.setFormatter(
+        formatter
+    )
+
+    logger.addHandler(
+        handler
+    )

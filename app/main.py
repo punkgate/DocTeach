@@ -4,6 +4,8 @@ from fastapi import File
 from fastapi import HTTPException
 from app.models import QuestionRequest
 from app.rag import answer_question
+from app.logger import logger
+
 
 import os
 
@@ -15,6 +17,8 @@ from app.session_manager import (
 from app.ingestion import ingest_pdf
 
 app = FastAPI()
+
+logger.info("DOC TEACH STARTED")
 
 
 @app.get("/")
