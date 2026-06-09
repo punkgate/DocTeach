@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi import UploadFile
 from fastapi import File
 from fastapi import HTTPException
+from app.models import QuestionRequest
+from app.rag import answer_question
 
 import os
 
@@ -78,4 +80,21 @@ async def upload_document(
         "chunks_created": result[
             "chunks_created"
         ]
+    }
+
+@app.post("/sessions/{session_id}/ask")
+def ask_question(
+    session_id: str,
+    request: QuestionRequest
+):
+
+    response = answer_question(
+        session_id,
+        request.question
+    )
+
+    return {
+        "session_id": session_id,
+        "question": request.question,
+        "answer": response
     }
