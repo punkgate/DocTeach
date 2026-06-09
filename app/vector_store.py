@@ -1,52 +1,50 @@
 from langchain_ollama import OllamaEmbeddings
 from langchain_chroma import Chroma
 
-# Embedding model
+from app.session_manager import get_session_db_path
+
 embedding_model = OllamaEmbeddings(
     model="nomic-embed-text"
 )
 
 
-def embed_text(text):
-    """
-    Convert a piece of text into an embedding vector.
-    Used mainly for testing and learning.
-    """
-    return embedding_model.embed_query(text)
+def get_vector_store(session_id):
 
-
-def create_vector_store(chunks):
-    """
-    Create a ChromaDB vector database from text chunks.
-    """
-
-    vector_db = Chroma.from_texts(
-        texts=chunks,
-        embedding=embedding_model,
-        persist_directory="./chroma_db"
+    db_path = get_session_db_path(
+        session_id
     )
 
-    return vector_db
-
-
-def load_vector_store():
-    """
-    Load an existing ChromaDB database from disk.
-    """
-
     return Chroma(
-        persist_directory="./chroma_db",
+        persist_directory=db_path,
         embedding_function=embedding_model
     )
 
 
-def search_documents(question, k=3):
-    """
-    Search the vector database using semantic similarity.
-    Returns the top k matching chunks.
-    """
+def add_chunks_to_db(
+    session_id,
+    chunks
+):
 
-    db = load_vector_store()
+    db = get_vector_store(
+        session_id
+    )
+
+    db.add_texts(
+        chunks
+    )
+
+    return db
+
+
+def search_documents(
+    session_id,
+    question,
+    k=3
+):
+
+    db = get_vector_store(
+        session_id
+    )
 
     results = db.similarity_search(
         query=question,
@@ -55,4 +53,9 @@ def search_documents(question, k=3):
 
     return results
 
-print("VECTOR STORE LOADED")
+
+def embed_text(text):
+
+    return embedding_model.embed_query(
+        text
+    )
