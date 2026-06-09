@@ -6,5 +6,6 @@ uploads/
 chroma_db/
 sessions/
 uploads/
+logs/
 
 .env
