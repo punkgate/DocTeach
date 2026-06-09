@@ -26,3 +26,7 @@ jobs:
       - name: Run Tests
         run: |
           pytest
+
+      - name: Verify Docker Build
+        run: |
+          docker build -t docteach .
