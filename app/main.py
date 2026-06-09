@@ -1,6 +1,16 @@
 from fastapi import FastAPI
+from fastapi import UploadFile
+from fastapi import File
+from fastapi import HTTPException
 
-from app.session_manager import create_session
+import os
+
+from app.session_manager import (
+    create_session,
+    get_session_documents_path
+)
+
+from app.ingestion import ingest_pdf
 
 app = FastAPI()
 
@@ -20,4 +30,52 @@ def create_new_session():
 
     return {
         "session_id": session_id
+    }
+
+
+@app.post("/sessions/{session_id}/upload")
+async def upload_document(
+    session_id: str,
+    file: UploadFile = File(...)
+):
+
+    documents_path = get_session_documents_path(
+        session_id
+    )
+
+    if not os.path.exists(
+        documents_path
+    ):
+        raise HTTPException(
+            status_code=404,
+            detail="Session not found"
+        )
+
+    file_path = os.path.join(
+        documents_path,
+        file.filename
+    )
+
+    with open(
+        file_path,
+        "wb"
+    ) as buffer:
+
+        content = await file.read()
+
+        buffer.write(
+            content
+        )
+
+    result = ingest_pdf(
+        session_id,
+        file_path
+    )
+
+    return {
+        "filename": file.filename,
+        "session_id": session_id,
+        "chunks_created": result[
+            "chunks_created"
+        ]
     }
