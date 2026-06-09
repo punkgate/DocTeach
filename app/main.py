@@ -1,36 +1,23 @@
-from fastapi import FastAPI, UploadFile, File
-import os
+from fastapi import FastAPI
+
+from app.session_manager import create_session
 
 app = FastAPI()
 
-UPLOAD_DIR = "uploads"
-
-os.makedirs(
-    UPLOAD_DIR,
-    exist_ok=True
-)
 
 @app.get("/")
 def root():
+
     return {
-        "message": "AI Document Assistant"
+        "message": "DocTeach API"
     }
 
-@app.post("/upload")
-async def upload_pdf(
-    file: UploadFile = File(...)
-):
-    
-    file_path = os.path.join(
-        UPLOAD_DIR,
-        file.filename
-    )
 
-    with open(file_path, "wb") as buffer:
-        content = await file.read()
-        buffer.write(content)
+@app.post("/sessions")
+def create_new_session():
+
+    session_id = create_session()
 
     return {
-        "filename": file.filename,
-        "status": "uploaded"
+        "session_id": session_id
     }
