@@ -1,3 +1,4 @@
+![CI](https://github.com/punkgate/DocTeach/actions/workflows/ci.yml/badge.svg)
 ![Python](https://img.shields.io/badge/Python-3.12-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Backend-green)
 ![Ollama](https://img.shields.io/badge/Ollama-Local%20LLM-black)
@@ -73,6 +74,18 @@ The platform exposes a REST API for:
 ![DocTeach Architecture](docs/Architecture_DocTeach.png)
 
 ---
+## Continuous Integration
+
+DocTeach uses GitHub Actions for automated validation.
+
+Every push and pull request triggers:
+
+* Dependency installation
+* Automated test execution (pytest)
+* Docker image build verification
+
+This ensures code quality and deployment readiness before changes are merged.
+
 
 ## Technology Stack
 
