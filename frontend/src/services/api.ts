@@ -10,3 +10,28 @@ export async function createSession() {
 
   return response.json();
 }
+
+export async function uploadPdf(
+  sessionId: string,
+  file: File
+) {
+
+  const formData =
+    new FormData();
+
+  formData.append(
+    "file",
+    file
+  );
+
+  const response =
+    await fetch(
+      `${API_BASE_URL}/sessions/${sessionId}/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+  return response.json();
+}
