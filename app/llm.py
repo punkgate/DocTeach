@@ -1,7 +1,9 @@
 from langchain_ollama import OllamaLLM
 
+from app.config import LLM_MODEL
+
 llm = OllamaLLM(
-    model="llama3"
+    model=LLM_MODEL
 )
 
 

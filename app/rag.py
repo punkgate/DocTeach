@@ -1,3 +1,4 @@
+from app.config import TOP_K_RESULTS
 from app.vector_store import search_documents
 from app.llm import ask_llm
 
@@ -10,7 +11,7 @@ def answer_question(
     results = search_documents(
         session_id,
         question,
-        k=3
+        k=TOP_K_RESULTS
     )
 
     context = "\n\n".join(

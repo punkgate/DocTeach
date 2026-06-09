@@ -1,10 +1,11 @@
 from langchain_ollama import OllamaEmbeddings
 from langchain_chroma import Chroma
 
+from app.config import EMBEDDING_MODEL
 from app.session_manager import get_session_db_path
 
 embedding_model = OllamaEmbeddings(
-    model="nomic-embed-text"
+    model=EMBEDDING_MODEL
 )
 
 
