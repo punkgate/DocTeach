@@ -15,7 +15,6 @@ export async function uploadPdf(
   sessionId: string,
   file: File
 ) {
-
   const formData =
     new FormData();
 
@@ -30,6 +29,28 @@ export async function uploadPdf(
       {
         method: "POST",
         body: formData,
+      }
+    );
+
+  return response.json();
+}
+
+export async function askQuestion(
+  sessionId: string,
+  question: string
+) {
+  const response =
+    await fetch(
+      `${API_BASE_URL}/sessions/${sessionId}/ask`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          question,
+        }),
       }
     );
 

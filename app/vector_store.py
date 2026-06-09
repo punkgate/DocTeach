@@ -48,6 +48,17 @@ def search_documents(
     question,
     k=3
 ):
+    db_path = get_session_db_path(
+        session_id
+    )
+
+    print(
+        f"\nSEARCHING SESSION: {session_id}"
+    )
+
+    print(
+        f"DATABASE PATH: {db_path}"
+    )
 
     db = get_vector_store(
         session_id
@@ -56,6 +67,10 @@ def search_documents(
     results = db.similarity_search(
         query=question,
         k=k
+    )
+
+    print(
+        f"RETRIEVED {len(results)} DOCUMENTS"
     )
 
     return results

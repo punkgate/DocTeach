@@ -6,6 +6,7 @@ from app.models import QuestionRequest
 from app.rag import answer_question
 from app.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
+from app.vector_store import get_vector_store
 
 
 import os
@@ -112,4 +113,21 @@ def ask_question(
         "session_id": session_id,
         "question": request.question,
         "answer": response
+    }
+
+@app.get("/sessions/{session_id}/debug")
+def debug_session(
+    session_id: str
+):
+    db = get_vector_store(
+        session_id
+    )
+
+    data = db.get()
+
+    return {
+        "session_id": session_id,
+        "documents": len(
+            data["documents"]
+        ),
     }
