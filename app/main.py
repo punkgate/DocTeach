@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from app.models import QuestionRequest
 from app.rag import answer_question
 from app.logger import logger
+from fastapi.middleware.cors import CORSMiddleware
 
 
 import os
@@ -17,6 +18,16 @@ from app.session_manager import (
 from app.ingestion import ingest_pdf
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 logger.info("DOC TEACH STARTED")
 
