@@ -174,13 +174,24 @@ Answer
 
 ---
 
-## Roadmap
+## Current Status
 
 ### v0.2.0
 
-* Environment-based configuration
-* Structured logging
-* Automated testing
+Implemented:
+
+- Session-based architecture
+- PDF ingestion pipeline
+- ChromaDB vector storage
+- Retrieval-Augmented Generation
+- Ollama integration
+- Environment-based configuration
+- Structured logging
+- File logging
+- Automated testing with pytest
+
+## Roadmap
+
 
 ### v0.3.0
 
@@ -202,6 +213,7 @@ Answer
 * Production-ready release
 
 ---
+
 
 ## Learning Objectives
 
