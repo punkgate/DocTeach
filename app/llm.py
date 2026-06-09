@@ -5,8 +5,14 @@ from app.logger import logger
 
 
 # Create the model once when the application starts
+from app.config import (
+    LLM_MODEL,
+    OLLAMA_HOST
+)
+
 llm = OllamaLLM(
-    model=LLM_MODEL
+    model=LLM_MODEL,
+    base_url=OLLAMA_HOST
 )
 
 logger.info(

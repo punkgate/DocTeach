@@ -4,8 +4,14 @@ from langchain_chroma import Chroma
 from app.config import EMBEDDING_MODEL
 from app.session_manager import get_session_db_path
 
-embedding_model = OllamaEmbeddings(
-    model=EMBEDDING_MODEL
+from app.config import (
+    EMBEDDING_MODEL,
+    OLLAMA_HOST
+)
+
+embeddings = OllamaEmbeddings(
+    model=EMBEDDING_MODEL,
+    base_url=OLLAMA_HOST
 )
 
 
@@ -17,7 +23,7 @@ def get_vector_store(session_id):
 
     return Chroma(
         persist_directory=db_path,
-        embedding_function=embedding_model
+        embedding_function=embeddings
     )
 
 
@@ -57,6 +63,6 @@ def search_documents(
 
 def embed_text(text):
 
-    return embedding_model.embed_query(
+    return embeddings.embed_query(
         text
     )
