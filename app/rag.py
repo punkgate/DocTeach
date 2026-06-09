@@ -1,17 +1,24 @@
 from app.config import TOP_K_RESULTS
 from app.vector_store import search_documents
 from app.llm import ask_llm
-
+from app.logger import logger
 
 def answer_question(
     session_id,
     question
 ):
+    logger.info(
+        f"Question received: {question}"
+    )
 
     results = search_documents(
         session_id,
         question,
         k=TOP_K_RESULTS
+    )
+
+    logger.info(
+        f"Retrieved {len(results)} chunks"
     )
 
     context = "\n\n".join(
@@ -41,6 +48,10 @@ Answer:
 
     response = ask_llm(
         prompt
+    )
+
+    logger.info(
+        "Generated response"
     )
 
     return response
