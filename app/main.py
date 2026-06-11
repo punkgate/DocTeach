@@ -7,6 +7,7 @@ from app.rag import answer_question
 from app.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
 from app.vector_store import get_vector_store
+from app.vector_store import search_documents
 
 
 import os
@@ -130,4 +131,23 @@ def debug_session(
         "documents": len(
             data["documents"]
         ),
+    }
+
+@app.get("/sessions/{session_id}/search")
+def debug_search(
+    session_id: str,
+    question: str
+):
+    results = search_documents(
+        session_id,
+        question,
+        k=3
+    )
+
+    return {
+        "count": len(results),
+        "results": [
+            doc.page_content[:500]
+            for doc in results
+        ]
     }
