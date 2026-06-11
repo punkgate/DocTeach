@@ -67,9 +67,6 @@ Answer:
         f"Prompt length: {len(prompt)} characters"
     )
 
-    print("\n" + "=" * 80)
-    print(prompt)
-    print("=" * 80 + "\n")
 
     response = ask_llm(
         prompt
