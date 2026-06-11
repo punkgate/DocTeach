@@ -6,6 +6,10 @@ import {
   askQuestion,
 } from "./services/api";
 
+import type {
+  Message,
+} from "./types";
+
 function App() {
   const [sessionId, setSessionId] =
     useState("");
@@ -16,17 +20,12 @@ function App() {
   const [question, setQuestion] =
     useState("");
 
-  const [answer, setAnswer] =
-    useState("");
+  const [messages, setMessages] =
+    useState<Message[]>([]);
 
   async function handleCreateSession() {
     const result =
       await createSession();
-
-    console.log(
-      "CREATED SESSION:",
-      result.session_id
-    );
 
     setSessionId(
       result.session_id
@@ -41,39 +40,21 @@ function App() {
       alert(
         "Create a session and select a PDF first."
       );
+
       return;
     }
 
-    console.log(
-      "UPLOAD SESSION:",
-      sessionId
-    );
-
-    console.log(
-      "FILE:",
-      file.name
-    );
-
     try {
-      const result =
-        await uploadPdf(
-          sessionId,
-          file
-        );
-
-      console.log(
-        "UPLOAD RESPONSE:",
-        result
+      await uploadPdf(
+        sessionId,
+        file
       );
 
       alert(
         "PDF uploaded successfully."
       );
     } catch (error) {
-      console.error(
-        "UPLOAD ERROR:",
-        error
-      );
+      console.error(error);
 
       alert(
         "Upload failed."
@@ -82,17 +63,6 @@ function App() {
   }
 
   async function handleAsk() {
-
-    console.log(
-      "ASK SESSION:",
-      sessionId
-    );
-
-    console.log(
-      "QUESTION:",
-      question
-    );
-
     if (
       !sessionId ||
       !question
@@ -100,31 +70,40 @@ function App() {
       alert(
         "Create a session and enter a question."
       );
+
       return;
     }
 
     try {
+      const currentQuestion =
+        question;
+
       const result =
         await askQuestion(
           sessionId,
-          question
+          currentQuestion
         );
 
-      console.log(
-        "ASK RESPONSE:",
-        result
+      setMessages(
+        (prev) => [
+          ...prev,
+          {
+            role: "user",
+            content:
+              currentQuestion,
+          },
+          {
+            role:
+              "assistant",
+            content:
+              result.answer,
+          },
+        ]
       );
 
-      setAnswer(
-        result.answer
-      );
-
+      setQuestion("");
     } catch (error) {
-
-      console.error(
-        "ASK ERROR:",
-        error
-      );
+      console.error(error);
 
       alert(
         "Failed to get answer."
@@ -135,8 +114,11 @@ function App() {
   return (
     <div
       style={{
+        maxWidth: "900px",
+        margin: "0 auto",
         padding: "2rem",
-        fontFamily: "sans-serif",
+        fontFamily:
+          "sans-serif",
       }}
     >
       <h1>DocTeach</h1>
@@ -155,13 +137,10 @@ function App() {
             marginTop: "1rem",
           }}
         >
-          <h2>
-            Active Session
-          </h2>
-
-          <p>
-            {sessionId}
-          </p>
+          <strong>
+            Active Session:
+          </strong>{" "}
+          {sessionId}
         </div>
       )}
 
@@ -174,18 +153,14 @@ function App() {
           type="file"
           accept=".pdf"
           onChange={(e) => {
-
             if (
               e.target.files
             ) {
-
               setFile(
                 e.target
                   .files[0]
               );
-
             }
-
           }}
         />
 
@@ -194,7 +169,8 @@ function App() {
             handleUpload
           }
           style={{
-            marginLeft: "1rem",
+            marginLeft:
+              "1rem",
           }}
         >
           Upload PDF
@@ -214,37 +190,73 @@ function App() {
             )
           }
           placeholder="Ask a question..."
-          rows={5}
-          cols={60}
+          rows={4}
+          cols={70}
         />
 
         <br />
 
         <button
-          onClick={handleAsk}
+          onClick={
+            handleAsk
+          }
           style={{
-            marginTop: "1rem",
+            marginTop:
+              "1rem",
           }}
         >
           Ask
         </button>
       </div>
 
-      {answer && (
-        <div
-          style={{
-            marginTop: "2rem",
-          }}
-        >
-          <h2>
-            Answer
-          </h2>
+      <div
+        style={{
+          marginTop: "2rem",
+        }}
+      >
+        <h2>
+          Conversation
+        </h2>
 
-          <p>
-            {answer}
-          </p>
-        </div>
-      )}
+        {messages.map(
+          (
+            message,
+            index
+          ) => (
+            <div
+              key={index}
+              style={{
+                padding:
+                  "1rem",
+                marginBottom:
+                  "1rem",
+                border:
+                  "1px solid #ddd",
+                borderRadius:
+                  "8px",
+                backgroundColor:
+                  message.role ===
+                  "user"
+                    ? "#f5f5f5"
+                    : "#ffffff",
+              }}
+            >
+              <strong>
+                {message.role ===
+                "user"
+                  ? "You"
+                  : "DocTeach"}
+              </strong>
+
+              <p>
+                {
+                  message.content
+                }
+              </p>
+            </div>
+          )
+        )}
+      </div>
     </div>
   );
 }
