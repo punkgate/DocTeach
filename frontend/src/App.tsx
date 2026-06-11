@@ -1,4 +1,8 @@
-import { useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import {
   createSession,
@@ -7,255 +11,493 @@ import {
 } from "./services/api";
 
 import type {
-  Message,
+  TerminalLine,
 } from "./types";
+
+import Spinner from "./spinner";
+
+import "./App.css";
+
+const banner = `
+██████╗  ██████╗  ██████╗████████╗███████╗ █████╗  ██████╗██╗  ██╗
+██╔══██╗██╔═══██╗██╔════╝╚══██╔══╝██╔════╝██╔══██╗██╔════╝██║  ██║
+██║  ██║██║   ██║██║        ██║   █████╗  ███████║██║     ███████║
+██║  ██║██║   ██║██║        ██║   ██╔══╝  ██╔══██║██║     ██╔══██║
+██████╔╝╚██████╔╝╚██████╗   ██║   ███████╗██║  ██║╚██████╗██║  ██║
+╚═════╝  ╚═════╝  ╚═════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
+`;
 
 function App() {
   const [sessionId, setSessionId] =
     useState("");
 
-  const [file, setFile] =
-    useState<File | null>(null);
-
-  const [question, setQuestion] =
+  const [command, setCommand] =
     useState("");
 
-  const [messages, setMessages] =
-    useState<Message[]>([]);
+  const [isLoading, setIsLoading] =
+    useState(false);
 
-  async function handleCreateSession() {
-    const result =
-      await createSession();
+  const [loadingText,
+    setLoadingText] =
+    useState("");
 
-    setSessionId(
-      result.session_id
+  const [terminalLines,
+    setTerminalLines] =
+    useState<TerminalLine[]>([
+      {
+        type: "system",
+        content:
+          "Initializing DocTeach...",
+      },
+      {
+        type: "success",
+        content:
+          "Retrieval Engine Loaded",
+      },
+      {
+        type: "success",
+        content:
+          "Terminal Ready",
+      },
+      {
+        type: "system",
+        content:
+          "Type 'help' to get started.",
+      },
+    ]);
+
+  const fileInputRef =
+    useRef<HTMLInputElement>(null);
+
+  const terminalRef =
+    useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (
+      terminalRef.current
+    ) {
+      terminalRef.current.scrollTop =
+        terminalRef.current.scrollHeight;
+    }
+  }, [
+    terminalLines,
+    isLoading,
+  ]);
+
+  function addLine(
+    type: TerminalLine["type"],
+    content: string
+  ) {
+    setTerminalLines(
+      (prev) => [
+        ...prev,
+        {
+          type,
+          content,
+        },
+      ]
     );
   }
 
-  async function handleUpload() {
+  async function runCommand(
+    input: string
+  ) {
+    const cmd =
+      input.trim();
+
+    if (!cmd) return;
+
+    addLine(
+      "command",
+      `> ${cmd}`
+    );
+
     if (
-      !sessionId ||
-      !file
+      cmd === "help"
     ) {
-      alert(
-        "Create a session and select a PDF first."
+      addLine(
+        "system",
+        "Available Commands:"
+      );
+
+      addLine(
+        "system",
+        "create-session"
+      );
+
+      addLine(
+        "system",
+        "upload"
+      );
+
+      addLine(
+        "system",
+        "about"
+      );
+
+      addLine(
+        "system",
+        "clear"
       );
 
       return;
     }
 
+    if (
+      cmd === "about"
+    ) {
+      addLine(
+        "system",
+        "DocTeach v0.6.1"
+      );
+
+      addLine(
+        "system",
+        "© 2026 Subrahmanya Anant Math"
+      );
+
+      addLine(
+        "system",
+        "GitHub: punkgate"
+      );
+
+      addLine(
+        "system",
+        "React + FastAPI + Ollama + ChromaDB"
+      );
+
+      return;
+    }
+
+    if (
+      cmd === "clear"
+    ) {
+      setTerminalLines([]);
+
+      return;
+    }
+
+    if (
+      cmd ===
+      "create-session"
+    ) {
+      setLoadingText(
+        "Creating session..."
+      );
+
+      setIsLoading(
+        true
+      );
+
+      try {
+        const result =
+          await createSession();
+
+        setSessionId(
+          result.session_id
+        );
+
+        addLine(
+          "success",
+          "Session created."
+        );
+
+        addLine(
+          "system",
+          `Session ID: ${result.session_id}`
+        );
+      } finally {
+        setIsLoading(
+          false
+        );
+      }
+
+      return;
+    }
+
+    if (
+      cmd === "upload"
+    ) {
+      if (
+        !sessionId
+      ) {
+        addLine(
+          "error",
+          "Create a session first."
+        );
+
+        return;
+      }
+
+      fileInputRef.current?.click();
+
+      return;
+    }
+
+    if (
+      !sessionId
+    ) {
+      addLine(
+        "error",
+        "Create a session first."
+      );
+
+      return;
+    }
+
+    setLoadingText(
+      "Thinking..."
+    );
+
+    setIsLoading(
+      true
+    );
+
     try {
-      await uploadPdf(
-        sessionId,
-        file
-      );
+      const result =
+        await askQuestion(
+          sessionId,
+          cmd
+        );
 
-      alert(
-        "PDF uploaded successfully."
+      addLine(
+        "response",
+        result.answer
       );
-    } catch (error) {
-      console.error(error);
-
-      alert(
-        "Upload failed."
+    } catch {
+      addLine(
+        "error",
+        "Query failed."
+      );
+    } finally {
+      setIsLoading(
+        false
       );
     }
   }
 
-  async function handleAsk() {
+  async function handleFileSelected(
+    file: File
+  ) {
     if (
-      !sessionId ||
-      !question
-    ) {
-      alert(
-        "Create a session and enter a question."
-      );
-
+      !sessionId
+    )
       return;
-    }
+
+    addLine(
+      "system",
+      `Selected: ${file.name}`
+    );
+
+    setLoadingText(
+      `Uploading ${file.name}...`
+    );
+
+    setIsLoading(
+      true
+    );
 
     try {
-      const currentQuestion =
-        question;
-
       const result =
-        await askQuestion(
+        await uploadPdf(
           sessionId,
-          currentQuestion
+          file
         );
 
-      setMessages(
-        (prev) => [
-          ...prev,
-          {
-            role: "user",
-            content:
-              currentQuestion,
-          },
-          {
-            role:
-              "assistant",
-            content:
-              result.answer,
-          },
-        ]
+      addLine(
+        "success",
+        `${file.name} uploaded.`
       );
 
-      setQuestion("");
-    } catch (error) {
-      console.error(error);
-
-      alert(
-        "Failed to get answer."
+      addLine(
+        "system",
+        `Indexed ${result.chunks_created} chunks.`
+      );
+    } catch {
+      addLine(
+        "error",
+        "Upload failed."
+      );
+    } finally {
+      setIsLoading(
+        false
       );
     }
   }
 
   return (
-    <div
-      style={{
-        maxWidth: "900px",
-        margin: "0 auto",
-        padding: "2rem",
-        fontFamily:
-          "sans-serif",
-      }}
-    >
-      <h1>DocTeach</h1>
-
-      <button
-        onClick={
-          handleCreateSession
-        }
-      >
-        Create Session
-      </button>
-
-      {sessionId && (
-        <div
-          style={{
-            marginTop: "1rem",
-          }}
-        >
-          <strong>
-            Active Session:
-          </strong>{" "}
-          {sessionId}
+    <div className="app">
+      <div className="window">
+        <div className="titlebar">
+          DOC TEACH
         </div>
-      )}
 
-      <div
-        style={{
-          marginTop: "2rem",
-        }}
-      >
-        <input
-          type="file"
-          accept=".pdf"
-          onChange={(e) => {
-            if (
-              e.target.files
-            ) {
-              setFile(
-                e.target
-                  .files[0]
-              );
-            }
-          }}
-        />
+        <div className="content">
+          <pre className="banner">
+            {banner}
+          </pre>
 
-        <button
-          onClick={
-            handleUpload
-          }
-          style={{
-            marginLeft:
-              "1rem",
-          }}
-        >
-          Upload PDF
-        </button>
-      </div>
+          <div
+            className="terminal"
+            ref={terminalRef}
+          >
+            {terminalLines.map(
+              (
+                line,
+                index
+              ) => (
+                <div
+                  key={index}
+                  className={`line ${line.type}`}
+                >
+                  {
+                    line.content
+                  }
+                </div>
+              )
+            )}
 
-      <div
-        style={{
-          marginTop: "2rem",
-        }}
-      >
-        <textarea
-          value={question}
-          onChange={(e) =>
-            setQuestion(
-              e.target.value
-            )
-          }
-          placeholder="Ask a question..."
-          rows={4}
-          cols={70}
-        />
+            {isLoading && (
+              <div className="spinner">
+                <Spinner
+                  text={
+                    loadingText
+                  }
+                />
+              </div>
+            )}
 
-        <br />
+            <div className="line system">
+              Quick Start:
+              {" "}
 
-        <button
-          onClick={
-            handleAsk
-          }
-          style={{
-            marginTop:
-              "1rem",
-          }}
-        >
-          Ask
-        </button>
-      </div>
+              <span
+                className="clickable-command"
+                onClick={() =>
+                  runCommand(
+                    "create-session"
+                  )
+                }
+              >
+                create-session
+              </span>
 
-      <div
-        style={{
-          marginTop: "2rem",
-        }}
-      >
-        <h2>
-          Conversation
-        </h2>
+              {" • "}
 
-        {messages.map(
-          (
-            message,
-            index
-          ) => (
+              <span
+                className="clickable-command"
+                onClick={() =>
+                  runCommand(
+                    "upload"
+                  )
+                }
+              >
+                upload
+              </span>
+
+              {" • "}
+
+              <span
+                className="clickable-command"
+                onClick={() =>
+                  runCommand(
+                    "about"
+                  )
+                }
+              >
+                about
+              </span>
+
+              {" • "}
+
+              <span
+                className="clickable-command"
+                onClick={() =>
+                  runCommand(
+                    "help"
+                  )
+                }
+              >
+                help
+              </span>
+            </div>
+
             <div
-              key={index}
+              className="line system"
               style={{
-                padding:
-                  "1rem",
-                marginBottom:
-                  "1rem",
-                border:
-                  "1px solid #ddd",
-                borderRadius:
-                  "8px",
-                backgroundColor:
-                  message.role ===
-                  "user"
-                    ? "#f5f5f5"
-                    : "#ffffff",
+                marginTop:
+                  "30px",
+                opacity: 0.6,
               }}
             >
-              <strong>
-                {message.role ===
-                "user"
-                  ? "You"
-                  : "DocTeach"}
-              </strong>
-
-              <p>
-                {
-                  message.content
-                }
-              </p>
+              ────────────────────────────────────────
+              <br />
+              DocTeach v0.6.1
+              <br />
+              © 2026 Subrahmanya Anant Math
             </div>
-          )
-        )}
+          </div>
+
+          <div className="command-input-container">
+            <div className="command-prefix">
+              &gt;
+            </div>
+
+            <input
+              className="command-input"
+              value={command}
+              onChange={(e) =>
+                setCommand(
+                  e.target.value
+                )
+              }
+              onKeyDown={async (
+                e
+              ) => {
+                if (
+                  e.key ===
+                  "Enter"
+                ) {
+                  const current =
+                    command;
+
+                  setCommand(
+                    ""
+                  );
+
+                  await runCommand(
+                    current
+                  );
+                }
+              }}
+              autoFocus
+            />
+          </div>
+
+          <input
+            ref={
+              fileInputRef
+            }
+            type="file"
+            accept=".pdf"
+            className="hidden-file-input"
+            onChange={(
+              e
+            ) => {
+              const file =
+                e.target
+                  .files?.[0];
+
+              if (
+                file
+              ) {
+                handleFileSelected(
+                  file
+                );
+              }
+            }}
+          />
+        </div>
       </div>
     </div>
   );

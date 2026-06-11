@@ -1,4 +1,10 @@
-export interface Message {
-  role: "user" | "assistant";
+export interface TerminalLine {
+  type:
+    | "system"
+    | "command"
+    | "response"
+    | "success"
+    | "error";
+
   content: string;
 }
